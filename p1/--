@@ -1,0 +1,21 @@
+
+backpack.sh -- running smoke tests
+
+START: Testing normal command execution
+  END: Testing normal command execution
+START: Testing use of readline for filename completion and history
+  END: Testing use of readline
+START: Testing the empty command
+  END: Testing the empty command
+START: Testing EOF
+  END: Testing EOF
+START: Testing exit
+  END: Testing exit
+START: Testing cd
+  END: Testing cd 
+START: Testing version
+  END: Testing version
+
+Valgrind was NOT run, make sure and test with valgrind as you progress further
+PASSED: Basic smoke tests passed! Please test for more functionality as you continue.
+
