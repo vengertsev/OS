@@ -1,0 +1,15 @@
+Grade: /100
+Late penalty:  
+
+Comments:
+
+=======================================================================
+Testing:
+    -Submission quality: 
+    -Build/Makefile: 
+    -Compiling: (10 points)
+    -Functional Requirements:
+       -Single-queue monitor: (80 points)
+
+Documentation:
+	README.md file: (10 points)
