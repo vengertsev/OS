@@ -1,0 +1,59 @@
+
+Type 2----------------------------------------
+
+chapter 40 - file system implementation. homework question 1 and 2. (vsfs.py); 
+
+A. two states determine what inbetween  ---------------
+The state of the file
+system is shown by printing the contents of four different data structures:
+
+- mkdir() - creates a new directory
+- creat() - creates a new (empty) file
+- open(), write(), close() - appends a block to a file
+- link()   - creates a hard link to a file
+- unlink() - unlinks a file (removing it if linkcnt==0)
+
+	1st - the type of file
+	f for a regular file
+	d for a directory 
+
+	2nd - indicates which data block belongs to a file (here, files can only be empty, which would have
+	the address of the data block set to -1, or one block in size, which would
+	have a non-negative address); 
+
+	3rd - shows the reference count for the file or directory. 
+
+	the following inode is a regular file, which is
+	empty (address field set to -1), and has just one link in the file system:
+	  [f a:-1 r:1]
+
+	If the same file had a block allocated to it (say block 10), it would be shown
+	as follows: 
+
+	  [f a:10 r:1]
+
+	If someone then created a hard link to this inode, it would then become:
+
+	  [f a:10 r:2]
+
+If we add a single file "f" to the root directory, which has been allocated
+inode number 1, the root directory contents would then become:
+
+  [(.,0) (..,0) (f,1)]
+
+inode bitmap 11110000
+inodes       [d a:0 r:6] [f a:1 r:1] [f a:-1 r:1] [d a:2 r:2] [] ...
+data bitmap  11100000
+data         [(.,0) (..,0) (y,1) (z,2) (f,3)] [u] [(.,3) (..,0)] [] ...
+
+python /home/DMITRYVENGERTSEV/cs552/scripts/HW-VSFS/vsfs.py  -s 17
+
+
+B. what operation is happening -> what is next
+
+python /home/DMITRYVENGERTSEV/cs552/scripts/HW-VSFS/vsfs.py  -s 21 -r
+
+
+C. given a block size and address bits, calculate the largest file size that can be represented by direct pointers, and single indirect pointers.
+
+Read about direct and indirect pointers and do examples!!!!!!!!!!!1 P5

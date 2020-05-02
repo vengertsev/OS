@@ -1,0 +1,70 @@
+##############################################
+#           Case 1
+##############################################
+
+/home/DMITRYVENGERTSEV/cs552/scripts/HW-Paging-LinearTranslate/paging-linear-translate.py -p 1k -a 16k -p 32k -v  -u 50 -c
+
+ARG seed 0
+ARG address space size 16k
+ARG phys mem size 32k
+ARG page size 4k
+ARG verbose True
+ARG addresses -1
+
+
+The format of the page table is simple:
+The high-order (left-most) bit is the VALID bit.
+  If the bit is 1, the rest of the entry is the PFN.
+  If the bit is 0, the page is not valid.
+Use verbose mode (-v) if you want to print the VPN # by
+each entry of the page table.
+
+Page Table (from entry 0 down to the max size)
+  [       0]   0x80000006
+  [       1]   0x00000000
+  [       2]   0x00000000
+  [       3]   0x80000003
+
+Virtual Address Trace
+  VA 0x00003229 (decimal:    12841) --> 00003229 (decimal    12841) [VPN 3]
+  VA 0x00001369 (decimal:     4969) -->  Invalid (VPN 1 not valid)
+  VA 0x00001e80 (decimal:     7808) -->  Invalid (VPN 1 not valid)
+  VA 0x00002556 (decimal:     9558) -->  Invalid (VPN 2 not valid)
+  VA 0x00003a1e (decimal:    14878) --> 00003a1e (decimal    14878) [VPN 3]
+
+
+
+##############################################
+#           Case 2
+##############################################
+
+/home/DMITRYVENGERTSEV/cs552/scripts/HW-Paging-LinearTranslate/paging-linear-translate.py -p 1k -a 8k -p 32k -v  -u 50 -c
+
+ARG seed 0
+ARG address space size 8k
+ARG phys mem size 32k
+ARG page size 4k
+ARG verbose True
+ARG addresses -1
+
+
+The format of the page table is simple:
+The high-order (left-most) bit is the VALID bit.
+  If the bit is 1, the rest of the entry is the PFN.
+  If the bit is 0, the page is not valid.
+Use verbose mode (-v) if you want to print the VPN # by
+each entry of the page table.
+
+Page Table (from entry 0 down to the max size)
+  [       0]   0x80000006
+  [       1]   0x00000000
+
+Virtual Address Trace
+  VA 0x00000849 (decimal:     2121) --> 00006849 (decimal    26697) [VPN 0]
+  VA 0x0000105c (decimal:     4188) -->  Invalid (VPN 1 not valid)
+  VA 0x00000cf5 (decimal:     3317) --> 00006cf5 (decimal    27893) [VPN 0]
+  VA 0x00001914 (decimal:     6420) -->  Invalid (VPN 1 not valid)
+  VA 0x000009b4 (decimal:     2484) --> 000069b4 (decimal    27060) [VPN 0]
+
+
+

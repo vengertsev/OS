@@ -1,0 +1,67 @@
+
+
+Q1----------------------
+
+/home/DMITRYVENGERTSEV/cs552/ll/bin/python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Disk/disk.py -a 0 -G
+
+seek = (circles) 2*40
+rotate = angle -15
+transfer = fixed 30
+
+inner circle practice!!!!!!!!!!!!11 P3
+
+
+/home/DMITRYVENGERTSEV/cs552/ll/bin/python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Disk/disk.py -a 0 -G
+
+180-15
+Block:   0  Seek:  0  Rotate:165  Transfer: 30  Total: 195
+
+TOTALS      Seek:  0  Rotate:165  Transfer: 30  Total: 195
+
+
+/home/DMITRYVENGERTSEV/cs552/ll/bin/python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Disk/disk.py -a 6 -G
+
+360-15
+Block:   6  Seek:  0  Rotate:345  Transfer: 30  Total: 375
+
+TOTALS      Seek:  0  Rotate:345  Transfer: 30  Total: 375
+
+
+
+/home/DMITRYVENGERTSEV/cs552/ll/bin/python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Disk/disk.py -a 30 -G
+
+S
+Block:  30  Seek: 80  Rotate:265  Transfer: 30  Total: 375
+
+TOTALS      Seek: 80  Rotate:265  Transfer: 30  Total: 375
+
+
+/home/DMITRYVENGERTSEV/cs552/ll/bin/python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Disk/disk.py -a 7,30,8 -G
+
+
+Block:   7  Seek:  0  Rotate: 15  Transfer: 30  Total:  45
+Block:  30  Seek: 80  Rotate:220  Transfer: 30  Total: 330
+Block:   8  Seek: 80  Rotate:310  Transfer: 30  Total: 420
+
+TOTALS      Seek:160  Rotate:545  Transfer: 90  Total: 795
+
+
+
+To compute the rotational delay for 18, first figure out how long the disk
+would take to rotate from the end of the access to sector 10 to the beginning
+of the access to sector 18, assuming a zero-cost seek. As you can see from the
+simulator, sector 10 on the outer track is lined up with sector 22 on the middle
+track, and there are 7 sectors separating 22 from 18 (23, 12, 13, 14, 15, 16,
+and 17, as the disk spins counter-clockwise). Rotating through 7 sectors takes
+210 time units (30 per sector). However, the first part of this rotation is
+actually spent seeking to the middle track, for 40 time units. Thus, the
+actual rotational delay for accessing sector 18 is 210 minus 40, or 170 time
+units. Run the simulator to see this for yourself; note that you can run
+without graphics and with the "-c" flag to just see the results without
+seeing the graphics.
+
+prompt> ./disk.py -a 10,18 -c
+...
+Sector:  10  Seek:  0  Rotate:105  Transfer: 30  Total: 135
+Sector:  18  Seek: 40  Rotate:170  Transfer: 30  Total: 240
+TOTALS      Seek: 40  Rotate:275  Transfer: 60  Total: 375

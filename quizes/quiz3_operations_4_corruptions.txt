@@ -1,0 +1,233 @@
+
+Q3----------------------------
+chapter 42 - fsck and journaling. homework questions 2 to 9. (fsck.py, only needs to determine what inconsistency exists.).
+
+2-9
+
+Practice! P2
+IDentify categories
+
+python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -s 1
+
+Failure types:
+
+
+data block (Db)
+updated inode (I[v2]) 
+updated bitmap (B[v2])
+
+
+Imagine only a single write succeeds:
+
+1 Just the data block (Db) is written to disk. In this case, the data is
+on disk, but there is no inode that points to it and no bitmap that
+even says the block is allocated. Thus, it is as if the write never
+occurred. This case is not a problem at all, from the perspective of
+file-system crash consistency1
+
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!!!CORRUPTION::INODE 8 with directory [('.', 8), ('..', 0)]:
+		  entry ('..', 0) altered to refer to different name (y)
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (y,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 38 -c
+
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!CORRUPTION::INODE 4 with directory [('.', 4), ('..', 0), ('p', 1)]:
+		  entry ('p', 1) altered to refer to different name (b)
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (b,1)] [] [] [] [z] [] [] [g]
+
+
+2 Just the updated inode (I[v2]) is written to disk. In this case, the
+inode points to the disk address (5) where Db was about to be written, but Db has not yet been written there. Thus, if we trust that
+pointer, we will read garbage data from the disk (the old contents
+of disk address 5).
+
+		/home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 3  -c
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!!!!CORRUPTION::INODE 13 refcnt increased
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:2] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+INODE is referenced more often or less often !!!!!!!!!!!!!!!!111
+
+		 python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 6 -c
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!!!1CORRUPTION::INODE 12 orphan
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [d a:-1 r:1] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+Orphan
+
+		python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 9 -c
+		ARG seed 0
+		ARG seedCorrupt 9
+		ARG numInodes 16
+		ARG numData 16
+		ARG numRequests 15
+		ARG printFinal False
+		ARG whichCorrupt -1
+		ARG dontCorrupt False
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!! CORRUPTION::INODE 13 was type file, now dir
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [d a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+Alterend type f->d
+
+
+		python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 10 -c
+		ARG seed 0
+		ARG seedCorrupt 10
+		ARG numInodes 16
+		ARG numData 16
+		ARG numRequests 15
+		ARG printFinal False
+		ARG whichCorrupt -1
+		ARG dontCorrupt False
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!!!!!!1 CORRUPTION::INODE 4 with directory [('.', 4), ('..', 0), ('p', 1)]:
+		  entry ('..', 0) altered to refer to unallocated inode (3)
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,3) (p,1)] [] [] [] [z] [] [] [g]
+
+
+3 Just the updated bitmap (B[v2]) is written to disk. In this case, the
+bitmap indicates that block 5 is allocated, but there is no inode that
+points to it. Thus the file system is inconsistent again; if left unresolved, this write would result in a space leak, as block 5 would
+never be used by the file system.
+
+		python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 1  -c
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		CORRUPTION::INODE BITMAP corrupt bit 13
+
+		Final state of file system:
+
+		inode bitmap 1100100010000010
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		!!!!!!!!!!!Corrupt inode bitmap
+
+		python /home/DMITRYVENGERTSEV/cs552/scripts/HW-Journaling/fsck.py -S 16 -c
+
+		Initial state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:15 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+		CORRUPTION::INODE 13 points to dead block 5
+
+		Final state of file system:
+
+		inode bitmap 1100100010000110
+		inodes       [d a:0 r:4] [f a:-1 r:1] [] [] [d a:8 r:2] [] [] [] [d a:6 r:2] [] [] [] [] [f a:5 r:1] [f a:12 r:1] []
+		data bitmap  1000001010001001
+		data         [(.,0) (..,0) (g,8) (t,14) (w,4) (m,13)] [] [] [] [] [] [(.,8) (..,0)] [] [(.,4) (..,0) (p,1)] [] [] [] [z] [] [] [g]
+
+
+		point to DEADBLOCK!!!!!!!!!!!!!!!
+
+
+		this attempt to write three
+		blocks to disk. In these cases, two writes succeed and the last one fails:
+
+
+4 The inode (I[v2]) and bitmap (B[v2]) are written to disk, but not
+data (Db). In this case, the file system metadata is completely consistent: the inode has a pointer to block 5, the bitmap indicates that
+5 is in use, and thus everything looks OK from the perspective of
+the file system’s metadata. But there is one problem: 5 has garbage
+in it again.
+
+5 The inode (I[v2]) and the data block (Db) are written, but not the
+bitmap (B[v2]). In this case, we have the inode pointing to the correct data on disk, but again have an inconsistency between the inode and the old version of the bitmap (B1). Thus, we once again
+need to resolve the problem before using the file system.
+
+
+6 The bitmap (B[v2]) and data block (Db) are written, but not the
+inode (I[v2]). In this case, we again have an inconsistency between
+the inode and the data bitmap. However, even though the block
+was written and the bitmap indicates its usage, we have no idea
+which file it belongs to, as no inode points to the file
+
+
